@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>복날파티 '오마이닭' 퀴즈 대작전</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Gaegu & Noto Sans KR -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        gaegu: ['Gaegu', 'cursive'],
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            yellow: '#FFD166',
+                            orange: '#FF8800',
+                            red: '#EF476F',
+                            green: '#06D6A0',
+                            blue: '#118AB2',
+                            dark: '#073B4C'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #FFF9ED;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .font-gaegu {
+            font-family: 'Gaegu', cursive;
+        }
+        .btn-bounce {
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .btn-bounce:active {
+            transform: scale(0.96);
+        }
+        .pulse-subtle {
+            animation: pulse-animation 2s infinite;
+        }
+        @keyframes pulse-animation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-gray-800">
+
+    <!-- Header / Navbar -->
+    <header class="bg-brand-orange text-white py-3 px-4 shadow-md flex justify-between items-center sticky top-0 z-30">
+        <div class="flex items-center gap-2 cursor-pointer" onclick="goToIntro()">
+            <span class="text-3xl">🐔</span>
+            <h1 class="text-xl md:text-2xl font-black font-gaegu tracking-wide">오마이닭 퀴즈</h1>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <!-- BGM Toggle Button -->
+            <button id="bgm-btn" onclick="toggleBGM()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 transition border border-white/30 shadow-sm">
+                <span id="bgm-icon">🎵</span>
+                <span id="bgm-text">BGM ON</span>
+            </button>
+
+            <!-- Snack Counter (Visible in Quiz & Explanation) -->
+            <div id="snack-counter-badge" class="hidden bg-white text-brand-orange px-3 py-1.5 rounded-full font-extrabold text-lg flex items-center gap-1.5 shadow-sm border-2 border-brand-yellow">
+                <span class="text-2xl">🍗</span>
+                <span>과자</span>
+                <span id="snack-count" class="text-brand-red font-black text-xl">0</span>개
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-3xl w-full mx-auto p-4 flex flex-col justify-center items-center">
+
+        <!-- ================= 1. INTRO SCREEN ================= -->
+        <section id="screen-intro" class="w-full bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-brand-yellow text-center flex flex-col items-center gap-6 my-auto">
+            <div class="bg-amber-100 rounded-full px-6 py-2 border-2 border-amber-300">
+                <span class="text-brand-orange font-bold text-lg md:text-xl">☀️ 7월 25일 중복 특별 파티!</span>
+            </div>
+            
+            <div class="relative my-2">
+                <span class="text-6xl md:text-8xl">🐔🎉🍗</span>
+            </div>
+
+            <div class="space-y-2">
+                <h2 class="text-3xl md:text-5xl font-black text-brand-dark font-gaegu tracking-wide">
+                    복날파티 <span class="text-brand-red">'오마이닭'</span>
+                </h2>
+                <p class="text-2xl md:text-3xl font-extrabold text-brand-orange font-gaegu">
+                    퀴즈 대작전!
+                </p>
+            </div>
+
+            <div class="bg-amber-50 p-4 rounded-2xl border-2 border-dashed border-amber-300 w-full text-base md:text-lg font-bold text-gray-700 space-y-1">
+                <p class="text-brand-blue">✨ 퀴즈를 맞히고 맛있는 닭다리 과자 득템하자!</p>
+                <p class="text-gray-600 text-sm md:text-base">선생님과 함께 쉽고 재미있는 복날 이야기를 들어요</p>
+            </div>
+
+            <button onclick="startQuiz()" class="w-full py-5 bg-brand-orange hover:bg-amber-600 text-white font-black text-2xl md:text-3xl rounded-2xl shadow-lg border-b-8 border-amber-700 btn-bounce pulse-subtle flex items-center justify-center gap-3">
+                <span>🚀 퀴즈 시작하기!</span>
+            </button>
+        </section>
+
+        <!-- ================= 2. QUIZ SCREEN ================= -->
+        <section id="screen-quiz" class="hidden w-full flex flex-col gap-4 my-auto">
+            
+            <!-- Progress Bar & Sound Toggle -->
+            <div class="bg-white p-3 rounded-2xl shadow-md border-2 border-amber-200 flex items-center justify-between gap-3">
+                <div class="flex-1 bg-gray-200 h-6 rounded-full overflow-hidden border border-gray-300">
+                    <div id="progress-bar" class="bg-brand-green h-full transition-all duration-300 rounded-full" style="width: 0%;"></div>
+                </div>
+                <div class="text-base font-extrabold text-gray-700 whitespace-nowrap font-gaegu text-xl">
+                    <span id="quiz-num" class="text-brand-red text-2xl">1</span> / 11
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-white rounded-3xl p-5 md:p-7 shadow-xl border-4 border-amber-300 text-center space-y-4 relative overflow-hidden">
+                <div class="flex justify-center items-start gap-2">
+                    <span id="q-category" class="bg-amber-100 text-amber-800 text-sm md:text-base font-bold px-3 py-1 rounded-full border border-amber-300">
+                        질문
+                    </span>
+                </div>
+
+                <h2 id="q-text" class="text-xl md:text-2xl font-black text-gray-800 leading-snug break-keep min-h-[3rem] flex items-center justify-center">
+                    질문 내용이 들어갑니다.
+                </h2>
+
+                <div id="q-illustration" class="text-5xl md:text-6xl py-2">
+                    ❓
+                </div>
+
+                <div id="wrong-toast" class="hidden absolute inset-0 bg-amber-500/95 text-white flex flex-col items-center justify-center gap-2 p-4 rounded-2xl transition-all duration-300 z-20 shadow-inner">
+                    <span class="text-5xl animate-bounce">😊</span>
+                    <p class="text-2xl md:text-3xl font-black font-gaegu tracking-wide drop-shadow-md">
+                        아쉬워요! 다시 한번 골라볼까요?
+                    </p>
+                </div>
+            </div>
+
+            <!-- Options Grid (2x2 or 4 rows) -->
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                <!-- Options dynamically inserted -->
+            </div>
+
+        </section>
+
+        <!-- ================= 3. EXPLANATION SCREEN (MODAL / SCREEN) ================= -->
+        <section id="screen-explain" class="hidden w-full bg-white rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-brand-green text-center flex flex-col items-center gap-5 my-auto">
+            
+            <div class="bg-emerald-100 text-emerald-800 font-extrabold text-lg md:text-xl px-6 py-2 rounded-full border border-emerald-300 flex items-center gap-2">
+                <span>🎉 정답이에요! +1 🍗</span>
+            </div>
+
+            <div id="explain-icon" class="text-6xl md:text-7xl">
+                💡
+            </div>
+
+            <div class="space-y-3 w-full">
+                <h3 class="text-2xl md:text-3xl font-black text-brand-dark font-gaegu tracking-wide" id="explain-title">
+                    재미있는 복날 상식!
+                </h3>
+                
+                <div class="bg-amber-50 p-4 md:p-5 rounded-2xl border-2 border-amber-200 text-left text-base md:text-lg font-bold text-gray-700 leading-relaxed shadow-inner space-y-2">
+                    <p id="explain-text" class="break-keep">
+                        해설 내용이 여기에 들어갑니다.
+                    </p>
+                </div>
+            </div>
+
+            <button onclick="nextQuestion()" class="w-full py-4 bg-brand-green hover:bg-emerald-600 text-white font-black text-xl md:text-2xl rounded-2xl shadow-lg border-b-8 border-emerald-800 btn-bounce flex items-center justify-center gap-2">
+                <span>다음 문제로 출발! 🚀</span>
+            </button>
+        </section>
+
+        <!-- ================= 4. OUTRO SCREEN ================= -->
+        <section id="screen-outro" class="hidden w-full bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-brand-yellow text-center flex flex-col items-center gap-6 my-auto">
+            
+            <div class="text-6xl md:text-7xl">
+                🏆🎉👑
+            </div>
+
+            <div class="space-y-2">
+                <h2 class="text-3xl md:text-5xl font-black text-brand-dark font-gaegu tracking-wide">
+                    축하합니다!
+                </h2>
+                <p class="text-2xl md:text-3xl font-extrabold text-brand-orange font-gaegu">
+                    복날 퀴즈 왕 완성!
+                </p>
+            </div>
+
+            <div class="bg-amber-100 p-5 rounded-2xl border-2 border-amber-300 w-full space-y-2">
+                <p class="text-xl md:text-2xl font-black text-brand-red">
+                    🍗 닭다리 과자 11개 득템 완료!
+                </p>
+                <p class="text-gray-700 font-bold text-base md:text-lg">
+                    모든 문제를 아주 잘 풀었어요!
+                </p>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 w-full text-left space-y-2 font-bold text-gray-700 text-sm md:text-base">
+                <p class="text-brand-blue font-extrabold text-lg">🎬 이제 파티를 시작해 볼까요?</p>
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">1.</span>
+                    <span>🍿 맛있는 통닭 & 과자와 음료수 챙기기!</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">2.</span>
+                    <span>🎬 넷플릭스 "치킨런 - 너겟의 탄생" 보러 가기!</span>
+                </div>
+            </div>
+
+            <button onclick="restartQuiz()" class="w-full py-4 bg-brand-orange hover:bg-amber-600 text-white font-black text-xl md:text-2xl rounded-2xl shadow-lg border-b-8 border-amber-700 btn-bounce flex items-center justify-center gap-2">
+                <span>🔄 처음부터 다시 하기</span>
+            </button>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-3 text-xs md:text-sm text-gray-500 font-semibold bg-amber-100/60 border-t border-amber-200">
+        복날파티 '오마이닭' | 사전 학습 & 퀴즈 프로젝트 🐔
+    </footer>
+
+    <!-- Audio Context & App Scripts -->
+    <script>
+        // Web Audio API Sound Synthesizer (No external audio file dependencies!)
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        let isBgmPlaying = false;
+        let bgmInterval = null;
+        let bgmStep = 0;
+
+        // Gentle, cheerful melody notes for quiz background
+        const bgmNotes = [
+            261.63, 329.63, 392.00, 523.25, 440.00, 523.25, 392.00, 329.63,
+            349.23, 440.00, 523.25, 659.25, 523.25, 440.00, 392.00, 349.23,
+            392.00, 493.88, 587.33, 698.46, 587.33, 493.88, 392.00, 329.63,
+            523.25, 392.00, 329.63, 261.63, 329.63, 392.00, 523.25, 659.25
+        ];
+
+        function playBgmStep() {
+            if (!isBgmPlaying || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(bgmNotes[bgmStep % bgmNotes.length], audioCtx.currentTime);
+
+                // Soft background volume level so teacher's voice remains clear
+                gain.gain.setValueAtTime(0.035, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+
+                bgmStep++;
+            } catch (e) {
+                console.log("BGM Play Error", e);
+            }
+        }
+
+        function startBGM() {
+            initAudio();
+            if (isBgmPlaying) return;
+            isBgmPlaying = true;
+            bgmStep = 0;
+            updateBgmUI();
+            if (bgmInterval) clearInterval(bgmInterval);
+            bgmInterval = setInterval(playBgmStep, 320);
+        }
+
+        function stopBGM() {
+            isBgmPlaying = false;
+            if (bgmInterval) {
+                clearInterval(bgmInterval);
+                bgmInterval = null;
+            }
+            updateBgmUI();
+        }
+
+        function toggleBGM() {
+            initAudio();
+            if (isBgmPlaying) {
+                stopBGM();
+            } else {
+                startBGM();
+            }
+        }
+
+        function updateBgmUI() {
+            const btn = document.getElementById('bgm-btn');
+            const icon = document.getElementById('bgm-icon');
+            const text = document.getElementById('bgm-text');
+            if (!btn) return;
+            if (isBgmPlaying) {
+                icon.textContent = '🎵';
+                text.textContent = 'BGM ON';
+                btn.classList.remove('opacity-50');
+            } else {
+                icon.textContent = '🔇';
+                text.textContent = 'BGM OFF';
+                btn.classList.add('opacity-50');
+            }
+        }
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioCtx();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'correct') {
+                    // Happy High Chime
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.3, now + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                } else if (type === 'wrong') {
+                    // Gentle Low Boop
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(220, now); // A3
+                    osc.frequency.setValueAtTime(180, now + 0.15);
+
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.2, now + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'click') {
+                    // Click
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'fanfare') {
+                    // Victory sound
+                    const freqs = [523.25, 659.25, 783.99, 1046.50];
+                    freqs.forEach((f, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.type = 'triangle';
+                        o.frequency.value = f;
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        
+                        const start = now + (idx * 0.12);
+                        g.gain.setValueAtTime(0, start);
+                        g.gain.linearRampToValueAtTime(0.25, start + 0.04);
+                        g.gain.exponentialRampToValueAtTime(0.001, start + 0.5);
+
+                        o.start(start);
+                        o.stop(start + 0.5);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio play error", e);
+            }
+        }
+
+        // Quiz Questions Data (11 Questions)
+        const quizData = [
+            {
+                category: "닭의 울음소리",
+                question: "Q1. 닭이 아침에 해가 뜰 때 내는 소리는 무엇일까요?",
+                illustration: "🐓🌅",
+                options: [
+                    { label: "1. 꼬꼬댁! 꼬꼬!", icon: "🐔", isCorrect: true },
+                    { label: "2. 멍멍! 멍멍!", icon: "🐶", isCorrect: false },
+                    { label: "3. 야옹~ 야옹~", icon: "🐱", isCorrect: false },
+                    { label: "4. 삐약! 삐약!", icon: "🐣", isCorrect: false }
+                ],
+                explainTitle: "닭의 아침 알람 소리!",
+                explainText: "닭은 아침 일찍 해가 떠오르면 '꼬꼬댁~!' 우렁차게 울어서 사람들에게 밝은 아침이 왔다고 알려주는 동네 최고 알람 시계예요!"
+            },
+            {
+                category: "영양만점 알",
+                question: "Q2. 닭이 낳는 동글동글하고 맛있는 영양만점 알의 이름은 무엇일까요?",
+                illustration: "🥚✨",
+                options: [
+                    { label: "1. 계단", icon: "🪜", isCorrect: false },
+                    { label: "2. 계산", icon: "💵", isCorrect: false },
+                    { label: "3. 계곡", icon: "🏞️", isCorrect: false },
+                    { label: "4. 계란", icon: "🥚", isCorrect: true }
+                ],
+                explainTitle: "영양 가득 계란 (달걀)!",
+                explainText: "닭이 낳은 알은 '계란' 또는 '달걀'이라고 해요. 단백질과 영양이 풍부해서 키가 쑥쑥 자라게 해주는 고마운 음식입니다!"
+            },
+            {
+                category: "복날의 의미",
+                question: "Q3. 오늘은 여름 중에서도 가장 더운 날인 '복날'이에요! 오늘 같은 복날을 세 번 합쳐서 뭐라고 부를까요?",
+                illustration: "☀️🔥",
+                options: [
+                    { label: "1. 삼각김밥", icon: "🍙", isCorrect: false },
+                    { label: "2. 삼복", icon: "☀️", isCorrect: true },
+                    { label: "3. 삼겹살", icon: "🥓", isCorrect: false },
+                    { label: "4. 삼행시", icon: "📝", isCorrect: false }
+                ],
+                explainTitle: "삼복(三伏) 이야기",
+                explainText: "여름철 가장 더운 세 날인 '초복, 중복, 말복'을 합쳐서 '삼복'이라고 불러요. 너무 더워서 사람도 납작 엎드려 휴식을 취하는 날이랍니다!"
+            },
+            {
+                category: "복날의 이름",
+                question: "Q4. 여름의 복날 중 첫 번째는 초복, 세 번째는 말복이에요. 그럼 오늘처럼 가운데(중간)에 있는 복날은 무엇일까요?",
+                illustration: "📅📍",
+                options: [
+                    { label: "1. 한복", icon: "🥋", isCorrect: false },
+                    { label: "2. 전복", icon: "🦪", isCorrect: false },
+                    { label: "3. 교복", icon: "👔", isCorrect: false },
+                    { label: "4. 중복", icon: "📍", isCorrect: true }
+                ],
+                explainTitle: "오늘은 바로 '중복'!",
+                explainText: "초복과 말복 사이, 한가운데(中)에 위치해서 '중복'이라고 불러요! 맛있는 음식을 먹고 더위를 이겨내 봐요!"
+            },
+            {
+                category: "복날 보양식",
+                question: "Q5. 복날에는 몸을 튼튼하게 해주는 맛있는 음식을 먹어요. 복날에 가장 인기 많은 '닭'으로 만든 탕은 무엇일까요?",
+                illustration: "🍲🐔",
+                options: [
+                    { label: "1. 감자탕", icon: "🥔", isCorrect: false },
+                    { label: "2. 설렁탕", icon: "🥣", isCorrect: false },
+                    { label: "3. 삼계탕", icon: "🍲", isCorrect: true },
+                    { label: "4. 목욕탕", icon: "♨️", isCorrect: false }
+                ],
+                explainTitle: "기운이 펄펄 삼계탕!",
+                explainText: "영양 많은 닭 속에 인삼과 찹쌀, 대추를 넣고 푹 고아낸 삼계탕은 땀을 많이 흘리는 여름철 원기를 보충해 주는 으뜸 보양식이에요!"
+            },
+            {
+                category: "복날 풍습",
+                question: "Q6. 옛날 사람들은 붉은색이 나쁜 기운과 더위를 쫓아준다고 믿었어요. 그래서 복날에 이 붉은 곡식으로 죽을 쑤어 먹었는데, 무슨 죽일까요?",
+                illustration: "🥣🔴",
+                options: [
+                    { label: "1. 팥죽", icon: "🔴", isCorrect: true },
+                    { label: "2. 반죽", icon: "🥖", isCorrect: false },
+                    { label: "3. 가죽", icon: "👞", isCorrect: false },
+                    { label: "4. 딴죽", icon: "💬", isCorrect: false }
+                ],
+                explainTitle: "액운을 쫓는 붉은 팥죽!",
+                explainText: "옛 조상님들은 붉은 팥이 나쁜 기운과 무더위를 몰아내 준다고 생각했어요. 동지뿐만 아니라 복날에도 팥죽을 쑤어 먹으며 건강을 기원했답니다!"
+            },
+            {
+                category: "복날의 어원",
+                question: "Q7. '복날'의 '복(伏)' 자는 사람이 개처럼 납작 엎드려 있는 모습을 본뜬 글자예요. 더위가 너무 강해서 사람이 엎드릴 만큼 더운 날이라는 뜻인데, '복날'을 영어로는 뭐라고 부를까요?",
+                illustration: "🐶☀️",
+                options: [
+                    { label: "1. 고양이의 날 (Cat days)", icon: "🐱", isCorrect: false },
+                    { label: "2. 닭들의 날 (Chicken days)", icon: "🐔", isCorrect: false },
+                    { label: "3. 공룡의 날 (Dino days)", icon: "🦖", isCorrect: false },
+                    { label: "4. 개들의 날 (Dog days)", icon: "🐶", isCorrect: true }
+                ],
+                explainTitle: "Dog Days (개의 날) 이야기",
+                explainText: "고대 로마 시절, 한여름 밤하늘에 가장 밝게 빛나는 시리우스 별('개의 별')이 태양과 같이 떠오르면 무더위가 찾아온다고 해서 'Dog days'라 부르게 되었답니다!"
+            },
+            {
+                category: "임금님의 선물",
+                question: "Q8. 옛날 임금님은 복날에 고생하는 신하들에게 더위를 이기라고 '이것'을 선물로 주었어요. 아주 차갑고 시원한 이것은 무엇일까요?",
+                illustration: "🧊👑",
+                options: [
+                    { label: "1. 얼음", icon: "🧊", isCorrect: true },
+                    { label: "2. 아이스크림", icon: "🍦", isCorrect: false },
+                    { label: "3. 에어컨", icon: "❄️", isCorrect: false },
+                    { label: "4. 선풍기", icon: "🌀", isCorrect: false }
+                ],
+                explainTitle: "귀한 선물, 얼음(빙표)!",
+                explainText: "냉장고가 없던 옛날에는 겨울철 한강에서 채취해 빙고에 보관해 둔 얼음이 보석처럼 귀했어요! 임금님은 복날 신하들에게 얼음을 나누어 주었답니다."
+            },
+            {
+                category: "여름 지혜",
+                question: "Q9. 복날에 삼계탕을 먹는 이유는 여름에 땀을 많이 흘려 차가워진 몸 속을 '따뜻하게' 해주기 위해서예요. 이렇게 '더운 날에 따뜻한 음식을 먹어 더위를 이기는 지혜'를 뜻하는 4글자 말은 무엇일까요?",
+                illustration: "🔥🍲",
+                options: [
+                    { label: "1. 이판사판", icon: "🎲", isCorrect: false },
+                    { label: "2. 천고마비", icon: "🐴", isCorrect: false },
+                    { label: "3. 이열치열", icon: "💥", isCorrect: true },
+                    { label: "4. 작심삼일", icon: "📅", isCorrect: false }
+                ],
+                explainTitle: "이열치열(以熱治熱)의 지혜!",
+                explainText: "'열은 열로써 물리친다'는 뜻이에요! 시원한 찬 음식만 많이 먹으면 배탈이 나기 쉬운데, 따뜻한 보양식으로 배를 따뜻하게 보호해 주는 슬기로운 지혜입니다."
+            },
+            {
+                category: "여름 피서",
+                question: "Q10. 옛날 사람들은 복날에 너무 더워서 시원한 냇물에 발을 담그고 피서를 즐겼어요. 이렇게 발을 씻으며 더위를 식히는 풍습을 무엇이라고 부를까요?",
+                illustration: "🌊🦶",
+                options: [
+                    { label: "1. 탁구", icon: "🏓", isCorrect: false },
+                    { label: "2. 탁족", icon: "🦶", isCorrect: true },
+                    { label: "3. 탁자", icon: "🪑", isCorrect: false },
+                    { label: "4. 탁주", icon: "🍶", isCorrect: false }
+                ],
+                explainTitle: "시원한 '탁족(濯足)' 풍습!",
+                explainText: "흐르는 계곡물에 발을 담그는 '탁족'은 온몸의 피로를 풀고 열을 내리는 아주 지혜롭고 시원한 옛날 피서 방법이에요!"
+            },
+            {
+                category: "복놀이 풍습",
+                question: "Q11. 복날에 산이나 계곡에 놀러 가서 맛있는 음식을 먹으며 하루를 즐겁게 보내는 풍습을 '복놀이'라고 해요. 복놀이를 할 때 가장 중요한 마음가짐은 무엇일까요?",
+                illustration: "🎉❤️",
+                options: [
+                    { label: "1. 친구들과 신나고 건강하게 즐기기", icon: "🥳", isCorrect: true },
+                    { label: "2. 혼자만 다 먹기", icon: "🍔", isCorrect: false },
+                    { label: "3. 하루 종일 투정 부리기", icon: "😭", isCorrect: false },
+                    { label: "4. 찌푸린 얼굴 하기", icon: "😠", isCorrect: false }
+                ],
+                explainTitle: "신나는 '오마이닭' 복날 파티!",
+                explainText: "복놀이에서 제일 중요한 건 친구, 선생님과 웃으며 행복하고 건강한 하루를 보내는 것이에요! 다 같이 신나게 파티를 즐겨볼까요?"
+            }
+        ];
+
+        // State variables
+        let currentQuestionIdx = 0;
+        let snackCount = 0;
+
+        // Element references
+        const screenIntro = document.getElementById('screen-intro');
+        const screenQuiz = document.getElementById('screen-quiz');
+        const screenExplain = document.getElementById('screen-explain');
+        const screenOutro = document.getElementById('screen-outro');
+        const snackCounterBadge = document.getElementById('snack-counter-badge');
+        const snackCountSpan = document.getElementById('snack-count');
+
+        // Navigation functions
+        function showScreen(screen) {
+            screenIntro.classList.add('hidden');
+            screenQuiz.classList.add('hidden');
+            screenExplain.classList.add('hidden');
+            screenOutro.classList.add('hidden');
+
+            screen.classList.remove('hidden');
+        }
+
+        function goToIntro() {
+            stopBGM();
+            snackCounterBadge.classList.add('hidden');
+            showScreen(screenIntro);
+        }
+
+        function startQuiz() {
+            playSound('click');
+            currentQuestionIdx = 0;
+            snackCount = 0;
+            snackCountSpan.textContent = snackCount;
+            snackCounterBadge.classList.remove('hidden');
+            startBGM();
+            loadQuestion();
+        }
+
+        function restartQuiz() {
+            startQuiz();
+        }
+
+        function loadQuestion() {
+            showScreen(screenQuiz);
+            const q = quizData[currentQuestionIdx];
+
+            // Reset wrong toast message
+            document.getElementById('wrong-toast').classList.add('hidden');
+
+            // Update Progress & UI
+            document.getElementById('quiz-num').textContent = currentQuestionIdx + 1;
+            const progressPercent = ((currentQuestionIdx) / quizData.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            document.getElementById('q-category').textContent = q.category;
+            document.getElementById('q-text').textContent = q.question;
+            document.getElementById('q-illustration').textContent = q.illustration;
+
+            // Render Options
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full py-4 px-5 bg-white hover:bg-amber-50 rounded-2xl shadow-md border-3 border-amber-300 font-extrabold text-lg md:text-xl text-left text-gray-800 flex items-center justify-between btn-bounce active:border-brand-orange transition-all`;
+                btn.innerHTML = `
+                    <span class="flex items-center gap-2">
+                        <span class="text-2xl">${opt.icon}</span>
+                        <span>${opt.label}</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-right text-amber-400"></i>
+                `;
+                btn.onclick = () => handleAnswer(opt.isCorrect, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(isCorrect, buttonElem) {
+            const wrongToast = document.getElementById('wrong-toast');
+
+            if (isCorrect) {
+                wrongToast.classList.add('hidden');
+                playSound('correct');
+                snackCount++;
+                snackCountSpan.textContent = snackCount;
+
+                // Fire confetti
+                confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { y: 0.7 }
+                });
+
+                // Highlight correct button
+                buttonElem.classList.remove('border-amber-300', 'bg-white');
+                buttonElem.classList.add('bg-emerald-100', 'border-brand-green', 'text-emerald-900');
+
+                // Delay slightly and show explanation screen
+                setTimeout(() => {
+                    showExplanation();
+                }, 700);
+
+            } else {
+                playSound('wrong');
+                
+                wrongToast.classList.remove('hidden');
+
+                // Highlight wrong button temporarily
+                buttonElem.classList.remove('border-amber-300');
+                buttonElem.classList.add('border-brand-red', 'bg-red-50');
+                
+                setTimeout(() => {
+                    wrongToast.classList.add('hidden');
+                    buttonElem.classList.remove('border-brand-red', 'bg-red-50');
+                    buttonElem.classList.add('border-amber-300');
+                }, 1400);
+            }
+        }
+
+        function showExplanation() {
+            showScreen(screenExplain);
+            const q = quizData[currentQuestionIdx];
+
+            document.getElementById('explain-icon').textContent = q.illustration;
+            document.getElementById('explain-title').textContent = q.explainTitle;
+            document.getElementById('explain-text').textContent = q.explainText;
+        }
+
+        function nextQuestion() {
+            playSound('click');
+            currentQuestionIdx++;
+
+            if (currentQuestionIdx < quizData.length) {
+                loadQuestion();
+            } else {
+                showOutro();
+            }
+        }
+
+        function showOutro() {
+            stopBGM();
+            playSound('fanfare');
+            showScreen(screenOutro);
+            
+            // Grand Confetti
+            confetti({
+                particleCount: 120,
+                spread: 100,
+                origin: { y: 0.5 }
+            });
+        }
+    </script>
+</body>
+</html>
